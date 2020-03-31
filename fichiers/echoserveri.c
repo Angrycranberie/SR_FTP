@@ -5,7 +5,7 @@
 #include "csapp.h"
 
 #define MAX_NAME_LEN 256
-
+#define NPROC 10
 void echo(int connfd);
 
 /* 
@@ -29,23 +29,34 @@ int main(int argc, char **argv)
     clientlen = (socklen_t)sizeof(clientaddr);
 
     listenfd = Open_listenfd(port);
-    while (1) {
+    pid_t pid;
+    int i = 0;
+    if(pid != 0){
+        for(i; i<NPROC; i++){
+            pid = Fork();
+        }
+    }
         
-        connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
+
+    while (1) {
+        if(pid == 0){
+            connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
 
         /* determine the name of the client */
-        Getnameinfo((SA *) &clientaddr, clientlen,
-                    client_hostname, MAX_NAME_LEN, 0, 0, 0);
+            Getnameinfo((SA *) &clientaddr, clientlen,
+               client_hostname, MAX_NAME_LEN, 0, 0, 0);
         
         /* determine the textual representation of the client's IP address */
-        Inet_ntop(AF_INET, &clientaddr.sin_addr, client_ip_string,
-                  INET_ADDRSTRLEN);
+            Inet_ntop(AF_INET, &clientaddr.sin_addr, client_ip_string,
+                INET_ADDRSTRLEN);
         
-        printf("server connected to %s (%s)\n", client_hostname,
-               client_ip_string);
+            printf("server connected to %s (%s)\n", client_hostname,
+                client_ip_string);
 
-        echo(connfd);
-        Close(connfd);
+            echo(connfd);
+            Close(connfd);    
+        }
+        
     }
     exit(0);
 }
