@@ -12,6 +12,15 @@ void echo(int connfd);
  * Note that this code only works with IPv4 addresses
  * (IPv6 is not supported)
  */
+
+void handler (int sig, pid_t [] proc){
+    int i ;
+    for(i = 0; i<NPROC, i++){
+        
+    }
+}
+
+
 int main(int argc, char **argv)
 {
     int listenfd, connfd, port;
