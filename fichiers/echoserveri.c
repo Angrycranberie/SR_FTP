@@ -6,6 +6,19 @@
 
 #define MAX_NAME_LEN 256
 #define NPROC 10
+
+pid_t proc[NPROC] = {};
+
+void shutchildren(int sig) {
+    int i;
+    if (getpid() != 0) {
+        for(i=0; i<NPROC; i++){
+            Kill(proc[i], SIGINT);
+        }
+        exit(0);
+    }
+}
+
 void echo(int connfd);
 
 /* 
@@ -29,7 +42,6 @@ int main(int argc, char **argv)
     clientlen = (socklen_t)sizeof(clientaddr);
 
     listenfd = Open_listenfd(port);
-    pid_t[NPROC] proc; 
     pid_t pid = getpid();
     int i = 0;
     if(pid != 0){
@@ -38,6 +50,7 @@ int main(int argc, char **argv)
         }
     }
         
+    Signal(SIGINT, shutchildren);
 
     while (1) {
         if(pid == 0){
