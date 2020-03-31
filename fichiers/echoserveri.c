@@ -29,11 +29,12 @@ int main(int argc, char **argv)
     clientlen = (socklen_t)sizeof(clientaddr);
 
     listenfd = Open_listenfd(port);
+    pid_t[NPROC] proc; 
     pid_t pid = getpid();
     int i = 0;
     if(pid != 0){
-        for(i; i<NPROC; i++){
-            pid = Fork();
+        for(i=0; i<NPROC; i++){
+            proc[i] = Fork();
         }
     }
         
