@@ -28,7 +28,7 @@ int main(int argc, char **argv)
      * and the server OS ... but it is possible that the server application
      * has not yet called "Accept" for this connection
      */
-    printf("client connected to server OS\n"); 
+    printf("client connected to server %s:%d\n",host,port); 
     
     Rio_readinitb(&rio, clientfd);
 
