@@ -15,9 +15,9 @@ LDFLAGS =
 #LIBS += -lsocket -lnsl -lrt
 LIBS += -lpthread
 
-CLFUNCS = get.o
+CMDS = get
 INCLUDE = csapp.h
-OBJS = csapp.o $(CLFUNCS)
+OBJS = csapp.o $(CMDS:%=%_s.o) $(CMDS:%=%_c.o)
 INCLDIR = -I.
 
 PROGS = ftpserver ftpclient

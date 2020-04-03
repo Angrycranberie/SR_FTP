@@ -12,6 +12,7 @@ int main(int argc, char **argv)
     int clientfd;
     char *host, buf[MAXLINE];
     rio_t rio;
+    char outlen[MAXLINE];
 
     if (argc != 2) {
         fprintf(stderr, "usage: %s <host>\n", argv[0]);
@@ -32,6 +33,7 @@ int main(int argc, char **argv)
      * has not yet called "Accept" for this connection
      */
     printf("%s Client connected to server [%s:%d].\n", PREFIX, host, PORT);
+    printf("%s ", PREFIX);
 
     Rio_readinitb(&rio, clientfd);
 
@@ -39,13 +41,34 @@ int main(int argc, char **argv)
     // Rio_writen(clientfd, buf, strlen(buf));
     // while (Rio_readlineb(&rio, buf, MAXLINE) > 0) Fputs(buf, stdout);
 
+
+    // while (Fgets(buf, MAXLINE, stdin) != NULL) {
+    //     Rio_writen(clientfd, buf, strlen(buf));
+    //     if (Rio_readlineb(&rio, buf, MAXLINE) > 0) {
+    //         printf("%s Command '%s' received by server.\n", PREFIX, buf);
+    //     } else { /* the server has prematurely closed the connection */
+    //         break;
+    //     }
+    //     printf("%s ", PREFIX);
+    // }
+
+
     while (Fgets(buf, MAXLINE, stdin) != NULL) {
-        Rio_writen(clientfd, buf, strlen(buf));
-        if (Rio_readlineb(&rio, buf, MAXLINE) > 0) {
-            printf("%s Feedback :\n> %s", PREFIX, buf);
-        } else { /* the server has prematurely closed the connection */
-            break;
+        if (strcmp(buf, "\n")) {
+            sprintf(outlen, "%d", (int)strlen(buf));
+            Rio_writen(clientfd, outlen, MAXLINE);
+            Rio_writen(clientfd, buf, atoi(outlen));
+            // Rio_writen(clientfd, buf, strlen(buf));
+            // Rio_readlineb(&rio, msglen, sizeof(int));
+            // printf("> %d\n", *msglen);
+            // if (Rio_readlineb(&rio, buf, atoi(msglen)) > 0) {
+            //      printf("%s Command '%s' received by server.\n", PREFIX, buf);
+            // } else { /* the server has prematurely closed the connection */
+            //     break;
+            // }
+            // free(msglen);
         }
+        printf("%s ", PREFIX);
     }
 
     Close(clientfd);

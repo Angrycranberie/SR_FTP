@@ -20,15 +20,39 @@ void shutchildren(int sig) {
     exit(0);
 }
 
+size_t parsecmd(char * args[], char cmd[]) {
+    char * delim = " ";
+    int i = 0;
+    char *ptr = strtok(cmd, delim);
+    while(ptr != NULL) {
+        args[i] = malloc(strlen(ptr) + 1);
+        strcpy(args[i], ptr);
+        i++;
+        ptr = strtok(NULL, delim);
+    }
+    return (i+1);
+}
+
+void freecmd(char * args[], size_t n) {
+    int i;
+    for (i=0; i < n; i++) Free(args[i]);
+    return;
+}
+
 void get(int connfd);
 
 /* Programme principal du serveur FTP. */
 int main(int argc, char **argv) {
-    int listenfd, connfd, i;
+    int listenfd, connfd, i/*, n, outlen*/;
     socklen_t clientlen;
     struct sockaddr_in clientaddr;
     char client_ip_string[INET_ADDRSTRLEN]; // 
     char client_hostname[MAX_NAME_LEN];
+    char buf[MAXLINE];
+    // char * args[MAX_CMD_SIZE];
+    // size_t cmdsize;
+    rio_t rio;
+    char inlen[MAXLINE];
 
     /* Sauvegarde du PID du maître. */
     pid_t ppid = getpid();
@@ -64,8 +88,24 @@ int main(int argc, char **argv) {
 
             printf("%s Server connected to %s (%s).\n", PREFIX, client_hostname, client_ip_string);
 
-            // TODO : Traitement de la commande envoyée par le client
-            get(connfd);
+            Rio_readinitb(&rio, connfd);
+
+            // while (1) {
+            while (Rio_readlineb(&rio, inlen, MAXLINE) != 0) {
+                // Rio_readlineb(&rio, inlen, MAXLINE);
+                Rio_readlineb(&rio, buf, atoi(inlen));
+                printf("%s %s\n", PREFIX, buf);
+                // printf("%s Server received %u bytes.\n", PREFIX, (unsigned int)n);
+                // cmdsize = parsecmd(args, buf);
+                // ml = strlen(args[0]);
+                // printf("%s Command '%s' sent by client %s (%s).\n", PREFIX, args[0], client_hostname, client_ip_string);
+                // printf("> %d\n", ml);
+                // Rio_writen(connfd, &ml, sizeof(int));
+                // Rio_writen(connfd, args[0], strlen(args[0]));
+                // freecmd(args, cmdsize);
+            }
+
+            // get(connfd);
 
             Close(connfd);
             printf("%s Client %s (%s) disconnected from the server.\n", PREFIX, client_hostname, client_ip_string);
