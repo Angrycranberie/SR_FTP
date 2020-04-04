@@ -16,6 +16,6 @@ size_t parsecmd(char * args[], char cmd[]);
 
 void freecmd(char * args[], size_t n);
 
-void get(int connfd);
+void get(char *file, int connfd);
 
 #endif // !_FTPSERVER_H_
