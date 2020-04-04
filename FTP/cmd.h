@@ -1,10 +1,39 @@
-#ifndef _CMD_H_
-#define _CMD_H_
+#ifndef __CMD_H__
+#define __CMD_H__
 
-size_t parsecmd(char * args[], char cmd[]);
+#include "ftp.h"
 
-void freecmd(char * args[], size_t n);
+#define CMD_MAXSIZE 16  // Nombre maximum d'arguments dans une commande.
 
-void get(int connfd);
+/* Types de commande */
+#define CMD_T_NONE  -1  // Aucune commande.
+#define CMD_T_BYE   0   // bye - Quitter le client.
+#define CMD_T_GET   1   // get - Récupérer un fichier du serveur.
 
-#endif // !_CMD_H_
+/* Structure d'une commande */
+typedef struct command {
+    int type;
+    char * argv[CMD_MAXSIZE];
+    size_t argc;
+} command_t;
+
+
+/* Fonctions de gestion des commandes */
+
+command_t newcmd(void);
+
+void str2cmd(char str[], command_t * c);
+
+void freecmd(command_t * c);
+
+
+/* Commandes côté serveur */
+
+void get_sv(int cfd, char *filename);
+
+
+/* Commandes côté client */
+
+void get_cl(rio_t *rp, char *buf);
+
+#endif // !__CMD_H__

@@ -1,65 +1,63 @@
-#include "csapp.h"
-#include "ftp.h"
+/*
+ * cmd.c
+ * Fonctions concernant les commandes d'un FTP
+ *
+ * Mathias DEPLANQUE
+ * Alexis YVON
+ * Groupe 2
+ *
+ */
+
 #include "cmd.h"
 
-size_t parsecmd(char * args[], char cmd[]) {
-    char * delim = " ";
-    int i = 0;
-    char *ptr = strtok(cmd, delim);
-    while(ptr != NULL) {
-        args[i] = malloc(strlen(ptr) + 1);
-        strcpy(args[i], ptr);
-        i++;
-        ptr = strtok(NULL, delim);
+command_t newcmd(void) {
+    command_t c;
+    c.type = -1;
+    c.argc = 0;
+    return c;
+}
+
+void str2cmd(char str[], command_t * c) {
+    char *d = " ";
+    char *ptr = strtok(str, d);
+    while (ptr != NULL) {
+        c->argv[c->argc] = malloc(strlen(ptr) + 1);
+        strcpy(c->argv[c->argc], ptr);
+        c->argc++;
+        ptr = strtok(NULL, d);
     }
-    return (i+1);
+    if (!strcmp(c->argv[0], "get")) c->type = CMD_T_GET;
+    else c->type = CMD_T_NONE;
 }
 
-void freecmd(char * args[], size_t n) {
+void freecmd(command_t * c) {
     int i;
-    for (i=0; i < n; i++) Free(args[i]);
-    return;
+    for (i=0; i < c->argc; i++) Free(c->argv[i]);
 }
 
-// ATTENTION MAUVAIS
-void get(int connfd)
-{
-    int n;
+void get_sv(int cfd, char *filename) {
+    int fd;
     char buf[MAXLINE];
     rio_t rio;
-    // char * args[MAX_CMD_SIZE];
-    // size_t cmdsize;
-    // int fd;
-    // char * fn;
-    // FILE * f;
 
-    Rio_readinitb(&rio, connfd);
-    while ((n = Rio_readlineb(&rio, buf, MAXLINE)) != 0) {
-        // printf("%s Server received %u bytes.\n", PREFIX, (unsigned int)n);
-        // cmdsize = parsecmd(args, buf);
-        // printf("%s Command '%s' sent by client.\n", PREFIX, args[0]);
-        // Rio_writen(connfd, args[0], strlen(args[0]));
-        printf("> %s\n", buf);
-        Rio_writen(connfd, buf, n);
+    char * fn = filename;
+    fd = Open(fn, O_RDONLY, S_IRUSR);
+    Rio_readinitb(&rio,fd);
+
+    if (fd) {
+        printf("%s Sending file '%s' to client...\n", SV_PFX, fn);
+        while (Rio_readnb(&rio, buf, 1024) != 0) {
+            // printf("%s\n", buf);
+            ftp_send(cfd, buf);
+        }
+        Close(fd);
     }
+}
 
-    // freecmd(args, cmdsize);
-
-    // Rio_readlineb(&rio, buf, MAXLINE);
-    // fn = buf;
-    // strip(fn);
-    // printf("%s\n", fn);
-
-    // fd = Open(fn, O_RDONLY, S_IRUSR);
-    // f = Fdopen(fd,"r");
-    // if (fd && f != NULL) {
-    //     // while((m = Read(fd,buf,MAXLINE)) != 0){
-    //     //     Rio_writen(connfd, buf, m);
-    //     // }
-    //     while (Fgets(buf, MAXLINE, f) != NULL) {
-    //         printf("%s\n", buf);
-    //         Rio_writen(connfd, buf, strlen(buf));
-    //     }
-    // }
-    // Fclose(f);
+void get_cl(rio_t *rp, char *buf) {
+    char inlen[INT_LEN];
+    while (Rio_readnb(rp, inlen, INT_LEN) != 0){
+        Rio_readnb(rp, buf, atoi(inlen));
+        Rio_writen(STDOUT_FILENO, buf, atoi(inlen));
+    }
 }
