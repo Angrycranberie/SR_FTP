@@ -1,23 +1,27 @@
-/*
- * Commande 'get' - côté serveur
- */
-
 #include "csapp.h"
-#include "ftpserver.h"
+#include "ftp.h"
+#include "cmd.h"
 
-// Deleting the annoying \n from a string
-// void strip(char *s) {
-//     char *p2 = s;
-//     while(*s != '\0') {
-//         if(*s != '\t' && *s != '\n') {
-//             *p2++ = *s++;
-//         } else {
-//             ++s;
-//         }
-//     }
-//     *p2 = '\0';
-// }
+size_t parsecmd(char * args[], char cmd[]) {
+    char * delim = " ";
+    int i = 0;
+    char *ptr = strtok(cmd, delim);
+    while(ptr != NULL) {
+        args[i] = malloc(strlen(ptr) + 1);
+        strcpy(args[i], ptr);
+        i++;
+        ptr = strtok(NULL, delim);
+    }
+    return (i+1);
+}
 
+void freecmd(char * args[], size_t n) {
+    int i;
+    for (i=0; i < n; i++) Free(args[i]);
+    return;
+}
+
+// ATTENTION MAUVAIS
 void get(int connfd)
 {
     int n;
@@ -59,4 +63,3 @@ void get(int connfd)
     // }
     // Fclose(f);
 }
-

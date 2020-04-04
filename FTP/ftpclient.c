@@ -2,23 +2,8 @@
  * ftpclient.c
  */
 #include "csapp.h"
-
-#define PREFIX "\033[1;32mftp>\033[0m"  // Préfixe de la console du client
-#define PORT 2003                       // Port du serveur sur lequel se connectera le client
-
-
-
-void strip(char *s) {
-    char *p2 = s;
-    while(*s != '\0') {
-        if(*s != '\t' && *s != '\n') {
-            *p2++ = *s++;
-        } else {
-            ++s;
-        }
-    }
-    *p2 = '\0';
-}
+#include "ftp.h"
+#include "cmd.h"
 
 /* Programme principal du client FTP. */
 int main(int argc, char **argv)
@@ -39,15 +24,15 @@ int main(int argc, char **argv)
      * If necessary, Open_clientfd will perform the name resolution
      * to obtain the IP address.
      */
-    clientfd = Open_clientfd(host, PORT);
+    clientfd = Open_clientfd(host, CL_PORT);
 
     /*
      * At this stage, the connection is established between the client
      * and the server OS ... but it is possible that the server application
      * has not yet called "Accept" for this connection
      */
-    printf("%s Client connected to server [%s:%d].\n", PREFIX, host, PORT);
-    printf("%s ", PREFIX);
+    printf("%s Client connected to server [%s:%d].\n", CL_PFX, host, CL_PORT);
+    printf("%s ", CL_PFX);
 
     Rio_readinitb(&rio, clientfd);
 
@@ -59,11 +44,11 @@ int main(int argc, char **argv)
     // while (Fgets(buf, MAXLINE, stdin) != NULL) {
     //     Rio_writen(clientfd, buf, strlen(buf));
     //     if (Rio_readlineb(&rio, buf, MAXLINE) > 0) {
-    //         printf("%s Command '%s' received by server.\n", PREFIX, buf);
+    //         printf("%s Command '%s' received by server.\n", CL_PFX, buf);
     //     } else { /* the server has prematurely closed the connection */
     //         break;
     //     }
-    //     printf("%s ", PREFIX);
+    //     printf("%s ", CL_PFX);
     // }
 
 
@@ -79,16 +64,16 @@ int main(int argc, char **argv)
             // Rio_readlineb(&rio, msglen, sizeof(int));
             // printf("> %d\n", *msglen);
             // if (Rio_readlineb(&rio, buf, atoi(msglen)) > 0) {
-            //      printf("%s Command '%s' received by server.\n", PREFIX, buf);
+            //      printf("%s Command '%s' received by server.\n", CL_PFX, buf);
             // } else { /* the server has prematurely closed the connection */
             //     break;
             // }
             // free(msglen);
         }
-        printf("%s ", PREFIX);
+        printf("%s ", CL_PFX);
     }
 
     Close(clientfd);
-    printf("\n%s Client disconnected from the server [%s:%d].\n", PREFIX, host, PORT);
+    printf("\n%s Client disconnected from the server [%s:%d].\n", CL_PFX, host, CL_PORT);
     exit(0);
 }
