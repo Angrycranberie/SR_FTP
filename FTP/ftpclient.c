@@ -4,7 +4,21 @@
 #include "csapp.h"
 
 #define PREFIX "\033[1;32mftp>\033[0m"  // Préfixe de la console du client
-#define PORT 2119                       // Port du serveur sur lequel se connectera le client
+#define PORT 2003                       // Port du serveur sur lequel se connectera le client
+
+
+
+void strip(char *s) {
+    char *p2 = s;
+    while(*s != '\0') {
+        if(*s != '\t' && *s != '\n') {
+            *p2++ = *s++;
+        } else {
+            ++s;
+        }
+    }
+    *p2 = '\0';
+}
 
 /* Programme principal du client FTP. */
 int main(int argc, char **argv)
@@ -54,10 +68,13 @@ int main(int argc, char **argv)
 
 
     while (Fgets(buf, MAXLINE, stdin) != NULL) {
+        strip(buf);
         if (strcmp(buf, "\n")) {
-            sprintf(outlen, "%d", (int)strlen(buf));
-            Rio_writen(clientfd, outlen, MAXLINE);
+            sprintf(outlen, "%05d", (int)strlen(buf));
+            Rio_writen(clientfd, outlen, 5);
             Rio_writen(clientfd, buf, atoi(outlen));
+            printf("%s\n", outlen);
+            printf("%s\n", buf);
             // Rio_writen(clientfd, buf, strlen(buf));
             // Rio_readlineb(&rio, msglen, sizeof(int));
             // printf("> %d\n", *msglen);

@@ -91,10 +91,12 @@ int main(int argc, char **argv) {
             Rio_readinitb(&rio, connfd);
 
             // while (1) {
-            while (Rio_readlineb(&rio, inlen, MAXLINE) != 0) {
+            while (Rio_readnb(&rio, inlen, 5) != 0) {
+                printf("taille string : %s\n",inlen);
+                printf("taille int : %d\n", atoi(inlen));
                 // Rio_readlineb(&rio, inlen, MAXLINE);
-                Rio_readlineb(&rio, buf, atoi(inlen));
-                printf("%s %s\n", PREFIX, buf);
+                Rio_readnb(&rio, buf, (size_t)atoi(inlen));
+                Rio_writen(1, buf,(size_t)atoi(inlen));
                 // printf("%s Server received %u bytes.\n", PREFIX, (unsigned int)n);
                 // cmdsize = parsecmd(args, buf);
                 // ml = strlen(args[0]);
