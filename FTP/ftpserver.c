@@ -69,9 +69,6 @@ int main(int argc, char **argv) {
             ftp_get(&rio, buf);
             str2cmd(buf, &cmd);
             switch (cmd.type) {
-                case CMD_T_NONE:
-                case CMD_T_BYE:
-                    break;
                 case CMD_T_GET:
                     get_sv(&rio, cmd.argv[1]);
                     break;

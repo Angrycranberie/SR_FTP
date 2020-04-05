@@ -10,10 +10,6 @@
 #define CMD_T_BYE   0   // bye - Quitter le client.
 #define CMD_T_GET   1   // get - Récupérer un fichier du serveur.
 
-/* Erreurs liées aux commandes */
-#define CMD_ERR_UNK "Unknown command."      // Commande inconnue.
-#define CMD_ERR_NEA "Not enough arguments." // Pas assez d'arguments passés en entrée.
-
 /* Structure d'une commande */
 typedef struct command {
     int type;
