@@ -46,7 +46,7 @@ void get_sv(rio_t *rio, char *filename) {
     //fd = open(fn, O_RDONLY, S_IRUSR);
     
 
-    if ((fd = open(fn, O_RDONLY, S_IRUSR))>0) {
+    if ((fd = open(fn, O_RDONLY, S_IRUSR))>0) { 
         Rio_readinitb(&riof,fd);
         ftp_send(rio->rio_fd, "ok",2);
         ftp_get(rio, retourcl);
