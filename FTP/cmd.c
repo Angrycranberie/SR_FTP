@@ -27,6 +27,8 @@ void str2cmd(char str[], command_t * c) {
         ptr = strtok(NULL, d);
     }
     if (!strcmp(c->argv[0], "get")) c->type = CMD_T_GET;
+    else if (!strcmp(c->argv[0], "bye")) c->type = CMD_T_BYE;
+    else if (!strcmp(c->argv[0], "error")) c->type = CMD_T_NONE;
     else c->type = CMD_T_NONE;
 }
 
@@ -46,9 +48,8 @@ void get_sv(int cfd, char *filename) {
 
     if (fd) {
         printf("%s Sending file '%s' to client...\n", SV_PFX, fn);
-        while ((n = Rio_readnb(&rio, buf, 1024)) != 0) {
-            // printf("%s\n", buf);
-            ftp_send(cfd, buf,n);
+        while ((n = Rio_readnb(&rio, buf, FILE_CHUNKSIZE)) != 0) {
+            ftp_send(cfd, buf, n);
         }
         Close(fd);
     }else{
