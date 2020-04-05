@@ -36,21 +36,24 @@ void freecmd(command_t * c) {
 }
 
 void get_sv(int cfd, char *filename) {
-    int fd;
+    int fd, n = 0;
     char buf[MAXLINE];
     rio_t rio;
 
     char * fn = filename;
-    fd = Open(fn, O_RDONLY, S_IRUSR);
+    fd = open(fn, O_RDONLY, S_IRUSR);
     Rio_readinitb(&rio,fd);
 
     if (fd) {
         printf("%s Sending file '%s' to client...\n", SV_PFX, fn);
-        while (Rio_readnb(&rio, buf, 1024) != 0) {
+        while ((n = Rio_readnb(&rio, buf, 1024)) != 0) {
             // printf("%s\n", buf);
-            ftp_send(cfd, buf);
+            ftp_send(cfd, buf,n);
         }
         Close(fd);
+    }else{
+        ftp_send(cfd,buf,0);
+        printf("Problème lors de l'ouverture du fichier\n");
     }
 }
 

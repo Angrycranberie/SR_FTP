@@ -27,7 +27,7 @@
 /* Supprime les retour à la ligne (\n) d'une chaîne */
 void strip(char *s);
 
-void ftp_send(int fd, char *usrbuf);
+void ftp_send(int fd, char *usrbuf,int taille);
 
 void ftp_get(rio_t *rp, char *usrbuf);
 
