@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 
     Fgets(buf, MAXLINE, stdin);
     strip(buf); // Enlèvement des retours à la ligne gênants.
-    ftp_send(clientfd, buf);
+    ftp_send(clientfd, buf,(int)strlen(buf));
     str2cmd(buf, &cmd);
     switch (cmd.type) {
         case CMD_T_GET:
