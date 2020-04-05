@@ -33,7 +33,7 @@ void freecmd(command_t * c);
 
 /* Commandes côté serveur */
 
-void get_sv(int cfd, char *filename);
+void get_sv(rio_t *rio, char *filename);
 
 
 /* Commandes côté client */

@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
                 case CMD_T_BYE:
                     break;
                 case CMD_T_GET:
-                    get_sv(connfd, cmd.argv[1]);
+                    get_sv(&rio, cmd.argv[1]);
                     break;
                 default:
                     break;
