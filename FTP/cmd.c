@@ -35,32 +35,62 @@ void freecmd(command_t * c) {
     for (i=0; i < c->argc; i++) Free(c->argv[i]);
 }
 
-void get_sv(int cfd, char *filename) {
+void get_sv(rio_t *rio, char *filename) {
     int fd, n = 0;
     char buf[MAXLINE];
-    rio_t rio;
+    char retourcl[2];
+    rio_t riof;
 
     char * fn = filename;
     fd = open(fn, O_RDONLY, S_IRUSR);
-    Rio_readinitb(&rio,fd);
+    Rio_readinitb(&riof,fd);
 
     if (fd) {
-        printf("%s Sending file '%s' to client...\n", SV_PFX, fn);
-        while ((n = Rio_readnb(&rio, buf, 1024)) != 0) {
-            // printf("%s\n", buf);
-            ftp_send(cfd, buf,n);
+        ftp_send(rio->rio_fd, "ok",2);
+        ftp_get(rio, retourcl);
+        printf("%s\n", retourcl);
+        if(!strcmp(retourcl, "ok")){
+            printf("%s Sending file '%s' to client...\n", SV_PFX, fn);
+            while ((n = Rio_readnb(&riof, buf, 1024)) != 0) {
+            printf("%s\n", buf);
+            ftp_send(rio->rio_fd, buf,n);
+            }
+            Close(fd);
+        }else {
+            printf("Erreur client\n");
         }
-        Close(fd);
+        
     }else{
-        ftp_send(cfd,buf,0);
+        ftp_send(rio->rio_fd,buf,0);
         printf("Problème lors de l'ouverture du fichier\n");
     }
 }
 
 void get_cl(rio_t *rp, char *buf) {
     char inlen[INT_LEN];
-    while (Rio_readnb(rp, inlen, INT_LEN) != 0){
-        Rio_readnb(rp, buf, atoi(inlen));
-        Rio_writen(STDOUT_FILENO, buf, atoi(inlen));
+    char retoursv[3] = "";
+    retoursv[2] = '\0'; 
+    char name[MAXLINE];
+    int fd;
+
+    printf("retoursv : %s\n", retoursv);
+    ftp_get(rp, retoursv);
+    printf("retoursv : %s\n", retoursv);
+    
+
+    if(!strcmp(retoursv,"ok")){
+        printf("Donner le nom du fichier : \n");
+        Fgets(name, MAXLINE, stdin);
+        strip(name);
+        ftp_send(rp->rio_fd, "ok",2);
+        fd = open(name, O_CREAT | O_RDWR, S_IRWXU);
+        while (Rio_readnb(rp, inlen, INT_LEN) != 0){
+            Rio_readnb(rp, buf, atoi(inlen));
+            Rio_writen(fd, buf, atoi(inlen));
+        }
+    }else{
+        printf("fichier non trouvé ou problème lors de l'ouverture\n");
     }
+
+
 }

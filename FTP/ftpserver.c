@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
             str2cmd(buf, &cmd);
             switch (cmd.type) {
                 case CMD_T_GET:
-                    get_sv(connfd, cmd.argv[1]);
+                    get_sv(&rio, cmd.argv[1]);
                     break;
                 default:
                     break;
