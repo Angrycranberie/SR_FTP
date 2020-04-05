@@ -28,6 +28,8 @@ void str2cmd(char str[], command_t * c) {
         ptr = strtok(NULL, d);
     }
     if (!strcmp(c->argv[0], "get")) c->type = CMD_T_GET;
+    else if (!strcmp(c->argv[0], "bye")) c->type = CMD_T_BYE;
+    else if (!strcmp(c->argv[0], "error")) c->type = CMD_T_NONE;
     else c->type = CMD_T_NONE;
 }
 
