@@ -23,9 +23,9 @@ void strip(char *s) {
     *p2 = '\0';
 }
 
-void ftp_send(int fd, char *usrbuf) {
+void ftp_send(int fd, char *usrbuf,int taille) {
     char outlen[INT_LEN];
-    sprintf(outlen, "%05d", (int)strlen(usrbuf));
+    sprintf(outlen, "%05d", taille);
     Rio_writen(fd, outlen, INT_LEN);
     Rio_writen(fd, usrbuf, atoi(outlen));
 }
