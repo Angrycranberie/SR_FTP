@@ -45,64 +45,73 @@ void get_sv(rio_t *rio, char *filename) {
     rio_t riof;
 
     char * fn = filename;
-    fd = open(fn, O_RDONLY, S_IRUSR);
-    Rio_readinitb(&riof,fd);
 
-    if (fd) {
-        ftp_send(rio->rio_fd, "ok",2);
+    if ((fd = open(fn, O_RDONLY, S_IRUSR)) > 0) {
+        printf("%s File found !\n", SV_PFX);
+        ftp_send(rio->rio_fd, "ok", 2);
         ftp_get(rio, retourcl);
-        printf("%s\n", retourcl);
-        if(!strcmp(retourcl, "ok")){
-            printf("%s Sending file '%s' to client...\n", SV_PFX, fn);
-            while ((n = Rio_readnb(&riof, buf, 1024)) != 0) {
-            //printf("%s\n", buf);
-                ftp_send(rio->rio_fd, buf,n);
-            }
+
+        if (!strcmp(retourcl, "ok")) {
+            printf("%s Sending file \033[1;37m'%s'\033[0m to client...\n", SV_PFX, fn);
+            Rio_readinitb(&riof, fd);
+            while ((n = Rio_readnb(&riof, buf, FILE_CHUNKSIZE)) != 0) ftp_send(rio->rio_fd, buf, n);
             Close(fd);
-        }else {
-            printf("Erreur client\n");
+        } else {
+            ftp_error(0, SV_PFX, ERR_CL, FTP_ERR_BRCL);
         }
-        
-    }else{
-        ftp_send(rio->rio_fd,buf,0);
-        printf("Problème lors de l'ouverture du fichier\n");
+    } else {
+        ftp_error(rio->rio_fd, SV_PFX, ERR_FILE, FTP_ERR_NFCOF);
     }
 }
 
-void get_cl(rio_t *rp, char *buf) {
-    char inlen[INT_LEN];
+double get_cl(rio_t *rp, char *buf) {
+    char inlen[INT_LEN]; // Taille du message entrant.
+    char name[MAXLINE]; // Nom du fichier à créer chez le client.
+    int fd, n;
+    double bytes; // Taille reçue lors du transfert.
+
+    /* */
     char retoursv[3] = "";
-    retoursv[2] = '\0'; 
-    char name[MAXLINE];
-    int fd, n; 
-    double nbBytes,DLDelta;
-    //long clk_tck = CLOCKS_PER_SEC;
-    clock_t DLTimeb, DLTimea;
+    retoursv[2] = '\0';
 
-    //printf("retoursv : %s\n", retoursv);
     ftp_get(rp, retoursv);
-    //printf("retoursv : %s\n", retoursv);
-    
 
-    if(!strcmp(retoursv,"ok")){
-        printf("Donner le nom du fichier : \n");
+    if (!strcmp(retoursv,"ok")) {
+        printf("%s File found !\n", CL_PFX);
+        printf("%s Please give a new name to the requested file :\n> ", CL_PFX);
         Fgets(name, MAXLINE, stdin);
+        while (!strcmp(name, "\n")) {
+            printf("> ");
+            Fgets(name, MAXLINE, stdin);
+        }
         strip(name);
-        ftp_send(rp->rio_fd, "ok",2);
+        ftp_send(rp->rio_fd, "ok", 2);
         fd = open(name, O_CREAT | O_RDWR, S_IRWXU);
-        DLTimeb = clock();
         while (Rio_readnb(rp, inlen, INT_LEN) != 0){
             n = Rio_readnb(rp, buf, atoi(inlen));
-            //printf("%d\n", n);
-            nbBytes += n;
+            bytes += n;
             Rio_writen(fd, buf, atoi(inlen));
         }
-        DLTimea = clock();
-        DLDelta = (double)(DLTimea - DLTimeb);
-        printf("%lf bytes received in %lf seconds (%lf KB/s)\n", nbBytes, DLDelta/(double)CLOCKS_PER_SEC, (double)(nbBytes/1000.0)/(DLDelta/(double)CLOCKS_PER_SEC) );
-    }else{
-        printf("fichier non trouvé ou problème lors de l'ouverture\n");
+        printf("%s File successfully retrieved from server !\n", CL_PFX);
+        return bytes;
+    } else {
+        ftp_error(0, CL_PFX, ERR_FILE, FTP_ERR_NFCOF);
+        return -1.0;
     }
+}
 
+void print_gettime(double bytes, clock_t a, clock_t b) {
+    double d = (double)(b-a); // Différence de temps entre le début et la fin du téléchargement.
+    double t = d/(double)CLOCKS_PER_SEC; // Même différence correctement tempérée par une constante du module.
+    double v = (double)(bytes/1000.0)/(d/(double)CLOCKS_PER_SEC); // Vitesse de téléchargement.
 
+    /* Choix du format approprié à afficher. */
+    printf("%s ", CL_PFX);
+    if (bytes > 1000.000000) printf("%.2lf KB", (double)(bytes/1000.000000));
+    else printf("%.2lf B", bytes);
+    printf(" received in ");
+    if (t < 1.000000) printf("%.2lfms", (double)(t*1000.000000));
+    else printf("%.2lfs", t);
+    if (v > 1000.000000)  printf(" (%.2lf MB/s).\n", (double)(v/1000.000000));
+    else printf(" (%.2lf KB/s).\n", v);
 }

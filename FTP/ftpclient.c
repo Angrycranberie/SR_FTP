@@ -25,21 +25,21 @@ int main(int argc, char **argv)
     }
     host = argv[1];
 
-    clientfd = Open_clientfd(host, CL_PORT);
+    clientfd = Open_clientfd(host, CL_PORT); // Connexion au serveur.
 
-    printf("%s Client \033[1;32mconnected\033[0m to server [%s:%d].\n", CL_PFX, host, CL_PORT);
+    printf("%s Client \033[1;32mconnected\033[0m to server \033[1;37m[%s:%d]\033[0m.\n", CL_PFX, host, CL_PORT);
 
     Rio_readinitb(&rio, clientfd);
 
-    printf("%s ", CL_PFX);
+    printf("> ");
     Fgets(buf, MAXLINE, stdin);
     while (!strcmp(buf, "\n")) {
-        printf("%s ", CL_PFX);
+        printf("> ");
         Fgets(buf, MAXLINE, stdin);
     }
     strip(buf); // Enlèvement d'éventuels retours à la ligne gênants.
-    strcpy(cmdbuf, buf);
-    str2cmd(cmdbuf, &cmd);
+    strcpy(cmdbuf, buf); // Copie de l'entrée pour ne pas perdre son contenu lors de la transformation en commande.
+    str2cmd(cmdbuf, &cmd); // Transformation de l'entrée récupérée en commande.
     switch (cmd.type) {
         case CMD_T_NONE:
             ftp_error(clientfd, CL_PFX, ERR_CMD, CMD_ERR_UNK);
@@ -51,16 +51,23 @@ int main(int argc, char **argv)
             if (cmd.argc < 2) {
                 ftp_error(clientfd, CL_PFX, ERR_CMD, CMD_ERR_NEA);
             } else {
+                double bytes = -1.0;
+                clock_t clkA, clkB;
+                clkB = clock();
+                printf("%s Requesting file \033[1;37m'%s'\033[0m from server...\n", CL_PFX, cmd.argv[1]);
                 ftp_send(clientfd, buf, (int)strlen(buf));
-                get_cl(&rio, buf);
+                bytes = get_cl(&rio, buf);
+                clkA = clock();
+                if (bytes > 0.000000) print_gettime(bytes, clkB, clkA);
             }
             break;
         default:
+            ftp_send(clientfd, buf, (int)strlen(buf));
             break;
     }
     freecmd(&cmd);
 
     Close(clientfd);
-    printf("%s Client \033[1;91mdisconnected\033[0m from server [%s:%d].\n", CL_PFX, host, CL_PORT);
+    printf("%s Client \033[1;91mdisconnected\033[0m from server \033[1;37m[%s:%d]\033[0m.\n", CL_PFX, host, CL_PORT);
     exit(0);
 }

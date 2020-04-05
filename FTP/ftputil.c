@@ -31,6 +31,15 @@ void printerr(char *pfx, error_t *err) {
         case ERR_CMD:
             errtype = "Command error";
             break;
+        case ERR_FILE:
+            errtype = "File error";
+            break;
+        case ERR_SV:
+            errtype = "Server error";
+            break;
+        case ERR_CL:
+            errtype = "Client error";
+            break;
         default:
             errtype = "Error";
             break;
@@ -38,7 +47,6 @@ void printerr(char *pfx, error_t *err) {
     fprintf(stderr, "%s \033[1;91m%s :\033[0m %s\n", pfx, errtype, err->reason);
 }
 
-/* Supprime les retour à la ligne (\n) d'une chaîne */
 void strip(char *s) {
     char *p2 = s;
     while(*s != '\0') {
@@ -68,5 +76,5 @@ void ftp_error(int fd, char *pfx, int type, char *reason) {
     error_t e = newerr();
     updterr(&e, type, reason);
     printerr(pfx, &e);
-    ftp_send(fd, "error", 5);
+    if (fd) ftp_send(fd, "error", 5);
 }
