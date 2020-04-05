@@ -9,6 +9,7 @@
  */
 
 #include "cmd.h"
+#include <time.h>
 
 command_t newcmd(void) {
     command_t c;
@@ -52,8 +53,8 @@ void get_sv(rio_t *rio, char *filename) {
         if(!strcmp(retourcl, "ok")){
             printf("%s Sending file '%s' to client...\n", SV_PFX, fn);
             while ((n = Rio_readnb(&riof, buf, 1024)) != 0) {
-            printf("%s\n", buf);
-            ftp_send(rio->rio_fd, buf,n);
+            //printf("%s\n", buf);
+                ftp_send(rio->rio_fd, buf,n);
             }
             Close(fd);
         }else {
@@ -71,11 +72,14 @@ void get_cl(rio_t *rp, char *buf) {
     char retoursv[3] = "";
     retoursv[2] = '\0'; 
     char name[MAXLINE];
-    int fd;
+    int fd, n; 
+    double nbBytes,DLDelta;
+    //long clk_tck = CLOCKS_PER_SEC;
+    clock_t DLTimeb, DLTimea;
 
-    printf("retoursv : %s\n", retoursv);
+    //printf("retoursv : %s\n", retoursv);
     ftp_get(rp, retoursv);
-    printf("retoursv : %s\n", retoursv);
+    //printf("retoursv : %s\n", retoursv);
     
 
     if(!strcmp(retoursv,"ok")){
@@ -84,10 +88,16 @@ void get_cl(rio_t *rp, char *buf) {
         strip(name);
         ftp_send(rp->rio_fd, "ok",2);
         fd = open(name, O_CREAT | O_RDWR, S_IRWXU);
+        DLTimeb = clock();
         while (Rio_readnb(rp, inlen, INT_LEN) != 0){
-            Rio_readnb(rp, buf, atoi(inlen));
+            n = Rio_readnb(rp, buf, atoi(inlen));
+            //printf("%d\n", n);
+            nbBytes += n;
             Rio_writen(fd, buf, atoi(inlen));
         }
+        DLTimea = clock();
+        DLDelta = (double)(DLTimea - DLTimeb);
+        printf("%lf bytes received in %lf seconds (%lf KB/s)\n", nbBytes, DLDelta/(double)CLOCKS_PER_SEC, (double)(nbBytes/1000.0)/(DLDelta/(double)CLOCKS_PER_SEC) );
     }else{
         printf("fichier non trouvé ou problème lors de l'ouverture\n");
     }

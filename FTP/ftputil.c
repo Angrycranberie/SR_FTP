@@ -26,8 +26,8 @@ void strip(char *s) {
 void ftp_send(int fd, char *usrbuf,int taille) {
     char outlen[INT_LEN];
     sprintf(outlen, "%05d", taille);
-    printf("ftp-send outlen : %s\n", outlen);
-    printf("ftp_send usrbuf : %s\n",usrbuf);
+    //printf("ftp-send outlen : %s\n", outlen);
+    //printf("ftp_send usrbuf : %s\n",usrbuf);
     Rio_writen(fd, outlen, INT_LEN);
     Rio_writen(fd, usrbuf, atoi(outlen));
 }
@@ -35,9 +35,9 @@ void ftp_send(int fd, char *usrbuf,int taille) {
 void ftp_get(rio_t *rp, char *usrbuf) {
     char inlen[INT_LEN];
     Rio_readnb(rp, inlen, INT_LEN);
-    printf("ftp_get inlen : %s\n", inlen);
+    //printf("ftp_get inlen : %s\n", inlen);
     
     Rio_readnb(rp, usrbuf, (size_t) atoi(inlen));
 
-    printf("ftp_get usrbuf : %s\n", usrbuf);
+    //printf("ftp_get usrbuf : %s\n", usrbuf);
 }
